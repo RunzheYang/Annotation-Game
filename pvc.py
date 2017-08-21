@@ -7,7 +7,7 @@ from scipy.optimize import linprog
 
 
 class PedagogicalReasoning:
-	# Prepare the kernel of transformation B, 
+	# Prepare the kernel of transformation B,
 	# accuracy u, and learning mask psi.
 	def __init__(self, Z, H, G, alpha = 2.0, gamma = 0.3):
 		B = np.zeros((2*len(Z), len(H)))
