@@ -14,7 +14,11 @@ parser.add_argument("--acc", action="store_true", default=False,
 					help="the student will use the revealed examples cumulatively")
 parser.add_argument("--pos", action="store_true", default=False,
 					help="the student will receive a penalty")
+parser.add_argument("--largeH", action="store_true", default=False,
+					help="use a larger hypothesis space")
 # TODO: How robust is the teaching algorithm?
+args = parser.parse_args()
+
 
 # Feature Space Z:
 Z = np.array([[f1, f2, f3]
@@ -31,6 +35,20 @@ H = {
 		4: lambda t: t[2],	 # h3:  pink
 		5: lambda t: 1 - t[2]  # h3': bule
 	}
+
+if args.largeH:
+	H[6] = lambda t: t[0]*t[1]
+	H[7] = lambda t: t[1]*t[2]
+	H[8] = lambda t: t[2]*t[0]
+	H[9] = lambda t: (1-t[0])*t[1]
+	H[10] = lambda t: (1-t[1])*t[2]
+	H[11] = lambda t: (1-t[2])*t[0]
+	H[12] = lambda t: t[0]*(1-t[1])
+	H[13] = lambda t: t[1]*(1-t[2])
+	H[14] = lambda t: t[2]*(1-t[0])
+	H[15] = lambda t: (1-t[0])*(1-t[1])
+	H[16] = lambda t: (1-t[1])*(1-t[2])
+	H[17] = lambda t: (1-t[2])*(1-t[0])
 
 # Ground Truth Set G:
 X = Z[np.random.choice(len(Z), size=10)]
@@ -92,14 +110,13 @@ def insert_super_summary(g, t, e, r):
 
 
 if __name__ == '__main__':
-
-	args = parser.parse_args()
 	folder_name = "results/sim_res_"
+	if args.largeH:
+		folder_name = folder_name + "largeH_"
 	if args.pos:
 		folder_name = folder_name + "pos_"
 	else:
 		folder_name = folder_name + "penalty_"
-
 	if args.acc:
 		folder_name = folder_name + "acc/"
 	else:
@@ -108,7 +125,7 @@ if __name__ == '__main__':
 	# Run the simulation
 	k = 10
 	N = 5
-	REPEAT = 50
+	REPEAT = 20
 	init_belief = l1normalize(np.random.rand(len(H)))
 
 	for gammas in [0.3, 0.5, 0.7, 0.9]:

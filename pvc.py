@@ -103,6 +103,7 @@ def Kernel(A, atol=1e-13, rtol=0):
 
 # loglikelihood
 def lnlikelihood(theta, gt, summask):
+	theta = theta - theta.max()
 	est_rho = np.exp(theta)
 	partition = np.exp(theta).sum()
 	est_rho = est_rho / partition
@@ -114,7 +115,8 @@ def lnlikelihood(theta, gt, summask):
 # Maximum Likelihood Solver
 def MLE(gt, dim, summask):
 	nll = lambda *args: -lnlikelihood(*args)
-	result = minimize(nll, np.zeros(dim), args=(gt, summask))
+	result = minimize(nll, np.zeros(dim),
+					  args=(gt, summask), tol=1e-6)
 	theta = result["x"]
 	theta = theta - theta.max()
 	est_rho = np.exp(theta)
