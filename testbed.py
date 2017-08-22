@@ -1,3 +1,4 @@
+import json
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -54,6 +55,7 @@ summary_eg = {"round":[], "stutype": [], "value": []}
 curves_sum = {"round": [], "type": [], "value": []}
 super_summary_rw = {"gamma": [], "stutype": [], "value": []}
 super_summary_eg = {"gamma": [], "stutype": [], "value": []}
+super_summary_all = []
 
 def insert_log(r, t, v):
 	if t == "reward":
@@ -106,6 +108,7 @@ if __name__ == '__main__':
 	# Run the simulation
 	k = 10
 	N = 5
+	REPEAT = 50
 	init_belief = l1normalize(np.random.rand(len(H)))
 
 	for gammas in [0.3, 0.5, 0.7, 0.9]:
@@ -136,7 +139,7 @@ if __name__ == '__main__':
 			# Initialize the Student
 			student = Student(H, stu_type=student_types)
 			totrw = 0.0
-			for repeat in xrange(10):
+			for repeat in xrange(REPEAT):
 				ot, ot_prime = [], []
 				sub_totrw = 0.0
 				student.reset(belief=init_belief, stu_type=student_types)
@@ -147,7 +150,8 @@ if __name__ == '__main__':
 					# Practice Phase
 					answers = student.practice(queries)
 					est_rhos, est_eta = teacher.belief_estimate(answers)
-					insert_log(rnd, "real",	 student.real_eta(G))
+					real_eta = student.real_eta(G)
+					insert_log(rnd, "real",	 real_eta)
 					insert_log(rnd, "estimated", est_eta)
 					if rnd > 0:
 						reward = rw(last_est_eta, est_eta, gammas)
@@ -160,7 +164,7 @@ if __name__ == '__main__':
 					# Teaching Phase
 					examples, tilde_eta = teacher.teach(ot, est_rhos, est_eta, G)
 					insert_log(rnd, "#eg", len(examples))
-					insert_summary(rnd, student_types, student.real_eta(G),
+					insert_summary(rnd, student_types, real_eta,
 									len(examples), reward)
 					ot_prime = ot_prime + examples
 					if args.acc:
@@ -169,10 +173,18 @@ if __name__ == '__main__':
 						student.learn(examples)
 					last_est_eta = est_eta
 					ot = ot_prime if args.acc else []
+					super_summary_all.append({
+										"gamma": gammas,
+										"stu": student_types,
+										"rnd": rnd,
+										"real": real_eta,
+										"estimated": est_eta,
+										"rwd": reward,
+										"#eg": len(examples)})
 				sub_totrw = 0.0 if sub_totrw < 0 else sub_totrw
 				totrw += sub_totrw
 				insert_super_summary(gammas, student_types, len(ot_prime), sub_totrw)
-			totrw /= 10.0
+			totrw /= REPEAT * 1.0
 
 			curves_sum["round"] = curves["round"] + model_curves["round"]
 			curves_sum["type"] = curves["type"] + model_curves["type"]
@@ -203,9 +215,9 @@ if __name__ == '__main__':
 
 		fig = plt.figure()
 		ax1 = fig.add_subplot(111)
-		ax1 = sns.pointplot(x="round", y="value", hue="stutype", palette="Set1", data=summary_pf)
+		ax1 = sns.pointplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_pf)
 		ax2 = ax1.twinx()
-		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set1", data=summary_rw)
+		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
 		ax1.set(ylim=(0.0, 1.1))
 		ax2.set(ylim=(0.0, 3))
 		ax1.set_xlabel("round")
@@ -217,19 +229,26 @@ if __name__ == '__main__':
 		plt.close(fig)
 
 		fig2 = plt.figure()
-		ax = sns.barplot(x="round", y="value", hue="stutype", palette="Set1", data=summary_eg)
+		ax = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_eg)
 		ax.set_xlabel("round")
 		ax.set_ylabel("number of examples")
+		ax.legend(loc="upper right")
 		fig2.savefig(folder_name+"gamma-(%0.2f)_examples_summary.png"%(gammas))
 
 fig = plt.figure()
 ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
 ax.set_xlabel("gamma")
 ax.set_ylabel("total number of examples")
+ax.legend(loc="upper left")
 fig.savefig(folder_name+"examples_summary.png")
 
 fig2 = plt.figure()
 ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_rw)
 ax.set_xlabel("gamma")
 ax.set_ylabel("total reward")
+ax.set(ylim=(0.0, 4.0))
+ax.legend(loc="upper left")
 fig2.savefig(folder_name+"reward_summary.png")
+
+f = open(folder_name + "log.json", 'w')
+json.dump(super_summary_all, f)
