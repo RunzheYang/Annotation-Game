@@ -16,7 +16,7 @@ parser.add_argument("--pos", action="store_true", default=False,
 					help="the student will receive a penalty")
 parser.add_argument("--largeH", action="store_true", default=False,
 					help="use a larger hypothesis space")
-parser.add_argument("--diffprior", action="store_ture", default=False,
+parser.add_argument("--diffprior", action="store_true", default=False,
 					help="test students has different prior")
 # TODO: How robust is the teaching algorithm?
 args = parser.parse_args()
@@ -129,7 +129,7 @@ if __name__ == '__main__':
 	# Run the simulation
 	k = 10
 	N = 5
-	REPEAT = 20
+	REPEAT = 50
 	init_belief = l1normalize(np.random.rand(len(H)))
 
 	for gammas in [0.3, 0.5, 0.7, 0.9]:
@@ -258,8 +258,8 @@ if __name__ == '__main__':
 		ax.legend(loc="upper right")
 		fig2.savefig(folder_name+"gamma-(%0.2f)_examples_summary.png"%(gammas))
 
-	
-	for student_types in ["random", "weak", "median", "strong"]:						
+
+	for student_types in ["random", "weak", "median", "strong"]:
 		if not args.diffprior: continue
 		gammas = 0.7
 		summary_pf = {"round":[], "stutype": [], "value": []}
