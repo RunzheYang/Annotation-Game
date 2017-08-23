@@ -16,6 +16,8 @@ parser.add_argument("--pos", action="store_true", default=False,
 					help="the student will receive a penalty")
 parser.add_argument("--largeH", action="store_true", default=False,
 					help="use a larger hypothesis space")
+parser.add_argument("--diffprior", action="store_ture", default=False,
+					help="test students has different prior")
 # TODO: How robust is the teaching algorithm?
 args = parser.parse_args()
 
@@ -113,6 +115,8 @@ if __name__ == '__main__':
 	folder_name = "results/sim_res_"
 	if args.largeH:
 		folder_name = folder_name + "largeH_"
+	if args.diffprior:
+		folder_name = folder_name + "diffprior_"
 	if args.pos:
 		folder_name = folder_name + "pos_"
 	else:
@@ -129,6 +133,8 @@ if __name__ == '__main__':
 	init_belief = l1normalize(np.random.rand(len(H)))
 
 	for gammas in [0.3, 0.5, 0.7, 0.9]:
+
+		if args.diffprior: continue
 
 		model_curves = {"round": [], "type": [], "value": []}
 		for rnd in xrange(N):
@@ -252,20 +258,135 @@ if __name__ == '__main__':
 		ax.legend(loc="upper right")
 		fig2.savefig(folder_name+"gamma-(%0.2f)_examples_summary.png"%(gammas))
 
-fig = plt.figure()
-ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
-ax.set_xlabel("gamma")
-ax.set_ylabel("total number of examples")
-ax.legend(loc="upper left")
-fig.savefig(folder_name+"examples_summary.png")
+	
+	for student_types in ["random", "weak", "median", "strong"]:						
+		if not args.diffprior: continue
+		gammas = 0.7
+		summary_pf = {"round":[], "stutype": [], "value": []}
+		summary_eg = {"round":[], "stutype": [], "value": []}
+		for init_belief in [
+						np.array([0.1,0.0,0.1,0.0,0.8,0.0]),
+						np.array([0.2,0.0,0.2,0.0,0.6,0.0]),
+						np.array([0.2,0.1,0.2,0.1,0.4,0.0]),
+						np.array([0.2,0.1,0.2,0.1,0.2,0.2])
+					]:
 
-fig2 = plt.figure()
-ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_rw)
-ax.set_xlabel("gamma")
-ax.set_ylabel("total reward")
-ax.set(ylim=(0.0, 4.0))
-ax.legend(loc="upper left")
-fig2.savefig(folder_name+"reward_summary.png")
+			curves = {"round": [], "type": [], "value": []}
+			rewards = {"round": [], "type": [], "value": []}
+			num_eg = {"round": [], "type": [], "value": []}
 
-f = open(folder_name + "log.json", 'w')
-json.dump(super_summary_all, f)
+			# Initialize the Teacher
+			teacher = PedagogicalReasoning(Z, H, G, alpha=3, gamma=gammas)
+			# Initialize the Student
+			student = Student(H, stu_type=student_types)
+			totrw = 0.0
+			for repeat in xrange(REPEAT):
+				ot, ot_prime = [], []
+				sub_totrw = 0.0
+				student.reset(belief=init_belief, stu_type=student_types)
+				last_est_eta = 0.0
+				init_perfomance = student.real_eta(G)
+				for rnd in xrange(N):
+					# Sample k questions
+					queries = Z[np.random.choice(len(Z), size=k)]
+					# Practice Phase
+					answers = student.practice(queries)
+					est_rhos, est_eta = teacher.belief_estimate(answers)
+					real_eta = student.real_eta(G)
+					insert_log(rnd, "real",	 real_eta)
+					insert_log(rnd, "estimated", est_eta)
+					if rnd > 0:
+						reward = rw(last_est_eta, est_eta, gammas)
+						insert_log(rnd, "reward", reward)
+						sub_totrw += reward
+					else:
+						reward = 0.0
+						insert_log(rnd, "reward", 0.0)
+					if rnd < N-1: insert_log(rnd+1, "target", gammas*(1-est_eta)+est_eta)
+					# Teaching Phase
+					examples, tilde_eta = teacher.teach(ot, est_rhos, est_eta, G)
+					insert_log(rnd, "#eg", len(examples))
+					insert_summary(rnd, init_perfomance, real_eta,
+									len(examples), reward)
+					ot_prime = ot_prime + examples
+					if args.acc:
+						student.learn(ot_prime)
+					else:
+						student.learn(examples)
+					last_est_eta = est_eta
+					ot = ot_prime if args.acc else []
+					super_summary_all.append({
+										"stuprior": init_perfomance,
+										"stutype": student_types,
+										"rnd": rnd,
+										"real": real_eta,
+										"estimated": est_eta,
+										"rwd": reward,
+										"#eg": len(examples)})
+				sub_totrw = 0.0 if sub_totrw < 0 else sub_totrw
+				totrw += sub_totrw
+				insert_super_summary(student_types, init_perfomance, len(ot_prime), sub_totrw)
+			totrw /= REPEAT * 1.0
+
+			fig = plt.figure()
+			ax1 = fig.add_subplot(111)
+			ax1 = sns.pointplot(x="round", y="value", hue="type", data=curves)
+			ax2 = ax1.twinx()
+			ax2 = sns.barplot(x="round", y="value", hue="type", palette="Reds_r", data=rewards)
+			ax1.set_ylim(top=1.1)
+			ax2.set(ylim=(0.0, 3))
+			ax1.set_xlabel("round")
+			ax1.set_ylabel("performance")
+			ax2.set_ylabel("reward")
+			ax1.legend(loc="upper left")
+			ax2.legend(loc="upper right")
+			fig.savefig(folder_name+"type-%s_perform-(%0.2f)_reward-(%0.2f).png"%(student_types, init_perfomance, totrw))
+
+			fig2 = plt.figure()
+			ax = sns.barplot(x="round", y="value", hue="type", palette="Blues_d", data=num_eg)
+			ax.set_xlabel("round")
+			ax.set_ylabel("number of examples")
+			fig2.savefig(folder_name+"type-%s_perform-(%0.2f)_examples.png"%(student_types, init_perfomance))
+
+			plt.close(fig)
+			plt.close(fig2)
+
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111)
+		ax1 = sns.pointplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_pf)
+		ax2 = ax1.twinx()
+		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
+		ax1.set(ylim=(0.0, 1.1))
+		ax2.set(ylim=(0.0, 3))
+		ax1.set_xlabel("round")
+		ax1.set_ylabel("performance")
+		ax2.set_ylabel("reward")
+		ax1.legend().set_visible(False)
+		ax2.legend(loc="upper left")
+		fig.savefig(folder_name+"type-%s_summary.png"%(student_types))
+		plt.close(fig)
+
+		fig2 = plt.figure()
+		ax = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_eg)
+		ax.set_xlabel("round")
+		ax.set_ylabel("number of examples")
+		ax.legend(loc="upper right")
+		fig2.savefig(folder_name+"type-%s_examples_summary.png"%(student_types))
+
+	fig = plt.figure()
+	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
+	ax.set_xlabel("learnability")
+	ax.set_ylabel("total number of examples")
+	ax.legend(loc="upper left")
+	fig.savefig(folder_name+"examples_summary.png")
+
+	fig2 = plt.figure()
+	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_rw)
+	ax.set_xlabel("learnability")
+	ax.set_ylabel("total reward")
+	ax.set(ylim=(0.0, 4.0))
+	ax.legend(loc="upper left")
+	fig2.savefig(folder_name+"reward_summary.png")
+
+	f = open(folder_name + "log.json", 'w')
+	json.dump(super_summary_all, f)
