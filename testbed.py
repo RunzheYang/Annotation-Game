@@ -23,37 +23,51 @@ args = parser.parse_args()
 
 
 # Feature Space Z:
+# Z = np.array([[f1, f2, f3]
+# 			 for f1 in xrange(2)
+# 			 for f2 in xrange(2)
+# 			 for f3 in xrange(2)])
+
 Z = np.array([[f1, f2, f3]
-			 for f1 in xrange(2)
-			 for f2 in xrange(2)
-			 for f3 in xrange(2)])
+			 for f1 in xrange(5) # Blue / Red / Green / Orange / Pink
+			 for f2 in xrange(3) # Triangle / Circle / Rectangle
+			 for f3 in xrange(2)]) # Real / Dotted
 
 # Hypothesis Space H:
-H = {
-		0: lambda t: t[0],	 # h1:  triangle
-		1: lambda t: 1 - t[0], # h1': circle
-		2: lambda t: t[1],	 # h2:  real
-		3: lambda t: 1 - t[1], # h2': dotted
-		4: lambda t: t[2],	 # h3:  pink
-		5: lambda t: 1 - t[2]  # h3': bule
-	}
+# H = {
+# 		0: lambda t: t[0],	 # h1:  triangle
+# 		1: lambda t: 1 - t[0], # h1': circle
+# 		2: lambda t: t[1],	 # h2:  real
+# 		3: lambda t: 1 - t[1], # h2': dotted
+# 		4: lambda t: t[2],	 # h3:  pink
+# 		5: lambda t: 1 - t[2]  # h3': blue
+# 	}
 
-if args.largeH:
-	H[6] = lambda t: t[0]*t[1]
-	H[7] = lambda t: t[1]*t[2]
-	H[8] = lambda t: t[2]*t[0]
-	H[9] = lambda t: (1-t[0])*t[1]
-	H[10] = lambda t: (1-t[1])*t[2]
-	H[11] = lambda t: (1-t[2])*t[0]
-	H[12] = lambda t: t[0]*(1-t[1])
-	H[13] = lambda t: t[1]*(1-t[2])
-	H[14] = lambda t: t[2]*(1-t[0])
-	H[15] = lambda t: (1-t[0])*(1-t[1])
-	H[16] = lambda t: (1-t[1])*(1-t[2])
-	H[17] = lambda t: (1-t[2])*(1-t[0])
+H = {}
+for i in xrange(10):
+	if i < 5:
+		H[i] = lambda t: 1.0 if t[0] == i else 0.0
+	elif i < 8:
+		H[i] = lambda t: 1.0 if t[1] == i - 5 else 0.0
+	else:
+		H[i] = lambda t: 1.0 if t[2] == i - 8 else 0.0
+
+# if args.largeH:
+# 	H[6] = lambda t: t[0]*t[1]
+# 	H[7] = lambda t: t[1]*t[2]
+# 	H[8] = lambda t: t[2]*t[0]
+# 	H[9] = lambda t: (1-t[0])*t[1]
+# 	H[10] = lambda t: (1-t[1])*t[2]
+# 	H[11] = lambda t: (1-t[2])*t[0]
+# 	H[12] = lambda t: t[0]*(1-t[1])
+# 	H[13] = lambda t: t[1]*(1-t[2])
+# 	H[14] = lambda t: t[2]*(1-t[0])
+# 	H[15] = lambda t: (1-t[0])*(1-t[1])
+# 	H[16] = lambda t: (1-t[1])*(1-t[2])
+# 	H[17] = lambda t: (1-t[2])*(1-t[0])
 
 # Ground Truth Set G:
-X = Z[np.random.choice(len(Z), size=10)]
+X = Z[np.random.choice(len(Z), size=50)]
 G = [(x, H[4](x)) for x in X]
 
 # Define reward:
@@ -215,7 +229,12 @@ if __name__ == '__main__':
 
 			fig = plt.figure()
 			ax1 = fig.add_subplot(111)
-			ax1 = sns.pointplot(x="round", y="value", hue="type", data=curves_sum)
+			ax1 = sns.pointplot(x="round", 
+								y="value", 
+								hue="type", 
+								data=curves_sum,
+								markers=["o", "v", "s", "x"],
+								linestyles=["-", "--", "-.", ":"])
 			ax2 = ax1.twinx()
 			ax2 = sns.barplot(x="round", y="value", hue="type", palette="Reds_r", data=rewards)
 			ax1.set_ylim(top=1.1)
@@ -238,7 +257,13 @@ if __name__ == '__main__':
 
 		fig = plt.figure()
 		ax1 = fig.add_subplot(111)
-		ax1 = sns.pointplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_pf)
+		ax1 = sns.pointplot(x="round", 
+							y="value", 
+							hue="stutype", 
+							palette="Set3", 
+							data=summary_pf,
+							markers=["o", "v", "s", "x"],
+							linestyles=["-", "--", "-.", ":"])
 		ax2 = ax1.twinx()
 		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
 		ax1.set(ylim=(0.0, 1.1))
@@ -330,7 +355,12 @@ if __name__ == '__main__':
 
 			fig = plt.figure()
 			ax1 = fig.add_subplot(111)
-			ax1 = sns.pointplot(x="round", y="value", hue="type", data=curves)
+			ax1 = sns.pointplot(x="round", 
+								y="value", 
+								hue="type", 
+								data=curves,
+								markers=["o", "v", "s", "x"],
+								linestyles=["-", "--", "-.", ":"])
 			ax2 = ax1.twinx()
 			ax2 = sns.barplot(x="round", y="value", hue="type", palette="Reds_r", data=rewards)
 			ax1.set_ylim(top=1.1)
@@ -353,7 +383,13 @@ if __name__ == '__main__':
 
 		fig = plt.figure()
 		ax1 = fig.add_subplot(111)
-		ax1 = sns.pointplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_pf)
+		ax1 = sns.pointplot(x="round", 
+							y="value", 
+							hue="stutype", 
+							palette="Set3", 
+							data=summary_pf,
+							markers=["o", "v", "s", "x"],
+							linestyles=["-", "--", "-.", ":"])
 		ax2 = ax1.twinx()
 		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
 		ax1.set(ylim=(0.0, 1.1))
