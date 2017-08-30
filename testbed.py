@@ -43,14 +43,18 @@ Z = np.array([[f1, f2, f3]
 # 		5: lambda t: 1 - t[2]  # h3': blue
 # 	}
 
-H = {}
-for i in xrange(10):
-	if i < 5:
-		H[i] = lambda t: 1.0 if t[0] == i else 0.0
-	elif i < 8:
-		H[i] = lambda t: 1.0 if t[1] == i - 5 else 0.0
-	else:
-		H[i] = lambda t: 1.0 if t[2] == i - 8 else 0.0
+H = {
+	0: lambda t: 1.0 if t[0] == 0 else 0.0,
+	1: lambda t: 1.0 if t[0] == 1 else 0.0,
+	2: lambda t: 1.0 if t[0] == 2 else 0.0,
+	3: lambda t: 1.0 if t[0] == 3 else 0.0,
+	4: lambda t: 1.0 if t[0] == 4 else 0.0,
+	5: lambda t: 1.0 if t[1] == 0 else 0.0,
+	6: lambda t: 1.0 if t[1] == 1 else 0.0,
+	7: lambda t: 1.0 if t[1] == 2 else 0.0,
+	8: lambda t: 1.0 if t[2] == 0 else 0.0,
+	9: lambda t: 1.0 if t[2] == 1 else 0.0
+}
 
 # if args.largeH:
 # 	H[6] = lambda t: t[0]*t[1]
@@ -141,9 +145,9 @@ if __name__ == '__main__':
 		folder_name = folder_name + "ins/"
 
 	# Run the simulation
-	k = 10
+	k = 15
 	N = 5
-	REPEAT = 50
+	REPEAT = 100
 	init_belief = l1normalize(np.random.rand(len(H)))
 
 	for gammas in [0.3, 0.5, 0.7, 0.9]:
@@ -229,15 +233,15 @@ if __name__ == '__main__':
 
 			fig = plt.figure()
 			ax1 = fig.add_subplot(111)
-			ax1 = sns.pointplot(x="round", 
-								y="value", 
-								hue="type", 
+			ax1 = sns.pointplot(x="round",
+								y="value",
+								hue="type",
 								data=curves_sum,
 								markers=["o", "v", "s", "x"],
 								linestyles=["-", "--", "-.", ":"])
 			ax2 = ax1.twinx()
 			ax2 = sns.barplot(x="round", y="value", hue="type", palette="Reds_r", data=rewards)
-			ax1.set_ylim(top=1.1)
+			# ax1.set_ylim(top=1.1)
 			ax2.set(ylim=(0.0, 3))
 			ax1.set_xlabel("round")
 			ax1.set_ylabel("performance")
@@ -257,10 +261,10 @@ if __name__ == '__main__':
 
 		fig = plt.figure()
 		ax1 = fig.add_subplot(111)
-		ax1 = sns.pointplot(x="round", 
-							y="value", 
-							hue="stutype", 
-							palette="Set3", 
+		ax1 = sns.pointplot(x="round",
+							y="value",
+							hue="stutype",
+							palette="Set3",
 							data=summary_pf,
 							markers=["o", "v", "s", "x"],
 							linestyles=["-", "--", "-.", ":"])
@@ -290,10 +294,10 @@ if __name__ == '__main__':
 		summary_pf = {"round":[], "stutype": [], "value": []}
 		summary_eg = {"round":[], "stutype": [], "value": []}
 		for init_belief in [
-						np.array([0.1,0.0,0.1,0.0,0.8,0.0]),
-						np.array([0.2,0.0,0.2,0.0,0.6,0.0]),
-						np.array([0.2,0.1,0.2,0.1,0.4,0.0]),
-						np.array([0.2,0.1,0.2,0.1,0.2,0.2])
+						np.array([0.1,0.0,0.1,0.0,0.8,0.0,0.0,0.0,0.0,0.0]),
+						np.array([0.2,0.0,0.2,0.0,0.6,0.0,0.0,0.0,0.0,0.0]),
+						np.array([0.2,0.1,0.2,0.1,0.4,0.0,0.0,0.0,0.0,0.0]),
+						np.array([0.2,0.1,0.2,0.2,0.1,0.2,0.0,0.0,0.0,0.0])
 					]:
 
 			curves = {"round": [], "type": [], "value": []}
@@ -355,9 +359,9 @@ if __name__ == '__main__':
 
 			fig = plt.figure()
 			ax1 = fig.add_subplot(111)
-			ax1 = sns.pointplot(x="round", 
-								y="value", 
-								hue="type", 
+			ax1 = sns.pointplot(x="round",
+								y="value",
+								hue="type",
 								data=curves,
 								markers=["o", "v", "s", "x"],
 								linestyles=["-", "--", "-.", ":"])
@@ -383,16 +387,16 @@ if __name__ == '__main__':
 
 		fig = plt.figure()
 		ax1 = fig.add_subplot(111)
-		ax1 = sns.pointplot(x="round", 
-							y="value", 
-							hue="stutype", 
-							palette="Set3", 
+		ax1 = sns.pointplot(x="round",
+							y="value",
+							hue="stutype",
+							palette="Set3",
 							data=summary_pf,
 							markers=["o", "v", "s", "x"],
 							linestyles=["-", "--", "-.", ":"])
 		ax2 = ax1.twinx()
 		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
-		ax1.set(ylim=(0.0, 1.1))
+		# ax1.set(ylim=(0.0, 1.1))
 		ax2.set(ylim=(0.0, 3))
 		ax1.set_xlabel("round")
 		ax1.set_ylabel("performance")
@@ -413,7 +417,7 @@ if __name__ == '__main__':
 	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
 	ax.set_xlabel("learnability")
 	ax.set_ylabel("total number of examples")
-	ax.legend(loc="upper left")
+	ax.legend(loc="upper right")
 	fig.savefig(folder_name+"examples_summary.png")
 
 	fig2 = plt.figure()
