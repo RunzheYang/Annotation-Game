@@ -63,7 +63,7 @@ class PedagogicalReasoning:
 		if len(ot) > 0:
 			tmpA = psi * (1 - self.u)
 			# tmpC = (psi * (1 - self.u)).dot(region)
-			tmpC = psi
+			tmpC = psi.dot(region)
 			eta_prime = 1 + LP(-tmpC, rst) - tmpA.dot(rho)
 			# beta = psi.dot(region.dot(LP(-tmpC, rst, "x")) + rho)
 			beta = psi.dot(rho) + LP(tmpC, rst)
@@ -81,7 +81,7 @@ class PedagogicalReasoning:
 			at.append(xy)
 			psi = psi * self.psi[str(xy)]
 			# tmpC = (psi * (1 - self.u)).dot(region)
-			tmpC = psi
+			tmpC = psi.dot(region)
 			eta_prime = np.max(E)
 			# beta = psi.dot(region.dot(LP(-tmpC, rst, "x")) + rho)
 			beta = psi.dot(rho) + LP(tmpC, rst)
@@ -131,7 +131,7 @@ def MLE(gt, dim, summask):
 # Linear Programming for solving the worst case
 def LP(c, rst, result="fun"):
 	A_ub, b_ub, A_eq, b_eq = rst
-	scalar = 1000.0 if np.linalg.norm(c) < 0.001 else 1.0
+	scalar = 100.0 / np.linalg.norm(c) if np.linalg.norm(c) < 0.001 else 1.0
 	res = linprog(c * scalar,
 		A_ub = A_ub,
 		b_ub = b_ub,
