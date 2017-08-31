@@ -415,14 +415,20 @@ if __name__ == '__main__':
 
 	fig = plt.figure()
 	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
-	ax.set_xlabel("learnability")
+	if args.diffprior:
+		ax.set_xlabel("learnability")
+	else:
+		ax.set_xlabel("gamma")
 	ax.set_ylabel("total number of examples")
 	ax.legend(loc="upper right")
 	fig.savefig(folder_name+"examples_summary.png")
 
 	fig2 = plt.figure()
 	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_rw)
-	ax.set_xlabel("learnability")
+	if args.diffprior:
+		ax.set_xlabel("learnability")
+	else:
+		ax.set_xlabel("gamma")
 	ax.set_ylabel("total reward")
 	ax.set(ylim=(0.0, 4.0))
 	ax.legend(loc="upper left")

@@ -62,9 +62,11 @@ class PedagogicalReasoning:
 
 		if len(ot) > 0:
 			tmpA = psi * (1 - self.u)
-			tmpC = (psi * (1 - self.u)).dot(region)
+			# tmpC = (psi * (1 - self.u)).dot(region)
+			tmpC = psi
 			eta_prime = 1 + LP(-tmpC, rst) - tmpA.dot(rho)
-			beta = psi.dot(region.dot(LP(-tmpC, rst, "x")) + rho)
+			# beta = psi.dot(region.dot(LP(-tmpC, rst, "x")) + rho)
+			beta = psi.dot(rho) + LP(tmpC, rst)
 			delta = (1 - beta * (1 - self.gamma)) * (1 - eta)
 
 		cnt = 0
@@ -78,9 +80,11 @@ class PedagogicalReasoning:
 			xy = G[E.argmax()]
 			at.append(xy)
 			psi = psi * self.psi[str(xy)]
-			tmpC = (psi * (1 - self.u)).dot(region)
+			# tmpC = (psi * (1 - self.u)).dot(region)
+			tmpC = psi
 			eta_prime = np.max(E)
-			beta = psi.dot(region.dot(LP(-tmpC, rst, "x")) + rho)
+			# beta = psi.dot(region.dot(LP(-tmpC, rst, "x")) + rho)
+			beta = psi.dot(rho) + LP(tmpC, rst)
 			delta = (1 - beta * (1 - self.gamma)) * (1 - eta)
 		return at, (eta_prime / beta) - (1 - beta) / beta
 
