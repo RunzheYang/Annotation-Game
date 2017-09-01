@@ -6,6 +6,7 @@ import numpy as np
 from pvc import *
 from utils import *
 from simulation import *
+from matplotlib.backends.backend_pdf import PdfPages
 
 import argparse
 parser = argparse.ArgumentParser(
@@ -248,13 +249,17 @@ if __name__ == '__main__':
 			ax2.set_ylabel("reward")
 			ax1.legend(loc="upper left")
 			ax2.legend(loc="upper right")
-			fig.savefig(folder_name+"gamma-(%0.2f)_type-%s_reward-(%0.2f).png"%(gammas, student_types, totrw))
+			pp = PdfPages(folder_name+"gamma-(%0.2f)_type-%s_reward-(%0.2f).pdf"%(gammas, student_types, totrw))
+			fig.savefig(pp, format='pdf')
+			pp.close()
 
 			fig2 = plt.figure()
 			ax = sns.barplot(x="round", y="value", hue="type", palette="Blues_d", data=num_eg)
 			ax.set_xlabel("round")
 			ax.set_ylabel("number of examples")
-			fig2.savefig(folder_name+"gamma-(%0.2f)_type-%s_examples.png"%(gammas, student_types))
+			pp = PdfPages(folder_name+"gamma-(%0.2f)_type-%s_examples.pdf"%(gammas, student_types))
+			fig2.savefig(pp, format='pdf')
+			pp.close()
 
 			plt.close(fig)
 			plt.close(fig2)
@@ -277,7 +282,9 @@ if __name__ == '__main__':
 		ax2.set_ylabel("reward")
 		ax1.legend().set_visible(False)
 		ax2.legend(loc="upper left")
-		fig.savefig(folder_name+"gamma-(%0.2f)_summary.png"%(gammas))
+		pp = PdfPages(folder_name+"gamma-(%0.2f)_summary.pdf"%(gammas))
+		fig.savefig(pp, format='pdf')
+		pp.close()
 		plt.close(fig)
 
 		fig2 = plt.figure()
@@ -285,7 +292,9 @@ if __name__ == '__main__':
 		ax.set_xlabel("round")
 		ax.set_ylabel("number of examples")
 		ax.legend(loc="upper right")
-		fig2.savefig(folder_name+"gamma-(%0.2f)_examples_summary.png"%(gammas))
+		pp = PdfPages(folder_name+"gamma-(%0.2f)_examples_summary.pdf"%(gammas))
+		fig2.savefig(pp, format='pdf')
+		pp.close()
 
 
 	for student_types in ["random", "weak", "median", "strong"]:
@@ -374,13 +383,17 @@ if __name__ == '__main__':
 			ax2.set_ylabel("reward")
 			ax1.legend(loc="upper left")
 			ax2.legend(loc="upper right")
-			fig.savefig(folder_name+"type-%s_perform-(%0.2f)_reward-(%0.2f).png"%(student_types, init_perfomance, totrw))
+			pp = PdfPages(folder_name+"type-%s_perform-(%0.2f)_reward-(%0.2f).pdf"%(student_types, init_perfomance, totrw))
+			fig.savefig(pp, format="pdf")
+			pp.close()
 
 			fig2 = plt.figure()
 			ax = sns.barplot(x="round", y="value", hue="type", palette="Blues_d", data=num_eg)
 			ax.set_xlabel("round")
 			ax.set_ylabel("number of examples")
-			fig2.savefig(folder_name+"type-%s_perform-(%0.2f)_examples.png"%(student_types, init_perfomance))
+			pp = PdfPages(folder_name+"type-%s_perform-(%0.2f)_examples.pdf"%(student_types, init_perfomance))
+			fig2.savefig(pp, format="pdf")
+			pp.close()
 
 			plt.close(fig)
 			plt.close(fig2)
@@ -403,7 +416,9 @@ if __name__ == '__main__':
 		ax2.set_ylabel("reward")
 		ax1.legend().set_visible(False)
 		ax2.legend(loc="upper left")
-		fig.savefig(folder_name+"type-%s_summary.png"%(student_types))
+		pp = PdfPages(folder_name+"type-%s_summary.pdf"%(student_types))
+		fig.savefig(pp, format="pdf")
+		pp.close()
 		plt.close(fig)
 
 		fig2 = plt.figure()
@@ -411,7 +426,9 @@ if __name__ == '__main__':
 		ax.set_xlabel("round")
 		ax.set_ylabel("number of examples")
 		ax.legend(loc="upper right")
-		fig2.savefig(folder_name+"type-%s_examples_summary.png"%(student_types))
+		pp = PdfPages(folder_name+"type-%s_examples_summary.pdf"%(student_types))
+		fig2.savefig(pp, format="pdf")
+		pp.close()
 
 	fig = plt.figure()
 	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
@@ -421,7 +438,9 @@ if __name__ == '__main__':
 		ax.set_xlabel("gamma")
 	ax.set_ylabel("total number of examples")
 	ax.legend(loc="upper right")
-	fig.savefig(folder_name+"examples_summary.png")
+	pp = PdfPages(folder_name+"examples_summary.pdf")
+	fig.savefig(pp, format="pdf")
+	pp.close()
 
 	fig2 = plt.figure()
 	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_rw)
@@ -432,7 +451,9 @@ if __name__ == '__main__':
 	ax.set_ylabel("total reward")
 	ax.set(ylim=(0.0, 4.0))
 	ax.legend(loc="upper left")
-	fig2.savefig(folder_name+"reward_summary.png")
+	pp = PdfPages(folder_name+"reward_summary.pdf")
+	fig2.savefig(pp, format="pdf")
+	pp.close()
 
 	f = open(folder_name + "log.json", 'w')
 	json.dump(super_summary_all, f)
