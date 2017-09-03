@@ -168,6 +168,7 @@ if __name__ == '__main__':
 
 		summary_pf = {"round":[], "stutype": [], "value": []}
 		summary_eg = {"round":[], "stutype": [], "value": []}
+		summary_rw = {"round":[], "stutype": [], "value": []}
 
 		for student_types in ["random", "weak", "median", "strong"]:
 
@@ -302,6 +303,7 @@ if __name__ == '__main__':
 		gammas = 0.7
 		summary_pf = {"round":[], "stutype": [], "value": []}
 		summary_eg = {"round":[], "stutype": [], "value": []}
+		summary_rw = {"round":[], "stutype": [], "value": []}
 		for init_belief in [
 						np.array([0.1,0.0,0.1,0.0,0.8,0.0,0.0,0.0,0.0,0.0]),
 						np.array([0.2,0.0,0.2,0.0,0.6,0.0,0.0,0.0,0.0,0.0]),
@@ -434,10 +436,11 @@ if __name__ == '__main__':
 	ax = sns.barplot(x="gamma", y="value", hue="stutype", palette="Set3", data=super_summary_eg)
 	if args.diffprior:
 		ax.set_xlabel("learnability")
+		ax.legend(loc="upper right")
 	else:
 		ax.set_xlabel("gamma")
+		ax.legend(loc="upper left")
 	ax.set_ylabel("total number of examples")
-	ax.legend(loc="upper right")
 	pp = PdfPages(folder_name+"examples_summary.pdf")
 	fig.savefig(pp, format="pdf")
 	pp.close()
