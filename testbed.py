@@ -148,7 +148,7 @@ if __name__ == '__main__':
 	# Run the simulation
 	k = 15
 	N = 5
-	REPEAT = 100
+	REPEAT = 200
 	init_belief = l1normalize(np.random.rand(len(H)))
 
 	for gammas in [0.3, 0.5, 0.7, 0.9]:
@@ -272,7 +272,7 @@ if __name__ == '__main__':
 							hue="stutype",
 							palette="Set3",
 							data=summary_pf,
-							markers=["o", "v", "s", "x"],
+							# markers=["o", "v", "s", "x"],
 							linestyles=["-", "--", "-.", ":"])
 		ax2 = ax1.twinx()
 		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
@@ -374,7 +374,7 @@ if __name__ == '__main__':
 								y="value",
 								hue="type",
 								data=curves,
-								markers=["o", "v", "s", "x"],
+								# markers=["o", "v", "s", "x"],
 								linestyles=["-", "--", "-.", ":"])
 			ax2 = ax1.twinx()
 			ax2 = sns.barplot(x="round", y="value", hue="type", palette="Reds_r", data=rewards)
@@ -407,7 +407,7 @@ if __name__ == '__main__':
 							hue="stutype",
 							palette="Set3",
 							data=summary_pf,
-							markers=["o", "v", "s", "x"],
+							# markers=["o", "v", "s", "x"],
 							linestyles=["-", "--", "-.", ":"])
 		ax2 = ax1.twinx()
 		ax2 = sns.barplot(x="round", y="value", hue="stutype", palette="Set3", data=summary_rw)
